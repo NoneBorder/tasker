@@ -2,6 +2,15 @@
 
 A light distribute producter&consumer task model based on beego.
 
+## Features
+
+* Custom task input, execute logic
+* Auto retry after task execute failed
+
+## Limited
+
+* based on beego orm
+
 ## Installation
 
 `go get github.com/NoneBorder/tasker`
