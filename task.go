@@ -46,11 +46,17 @@ type ConsumeFn func(Input string, WorkerID uint64) (err error)
 // use for generate worker id
 var UniqID *sonyflake.Sonyflake
 
-func init() {
+func InitIDGEN(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) error {
 	// init sonyflake
 	UniqID = sonyflake.NewSonyflake(sonyflake.Settings{
-		StartTime: time.Now(),
+		StartTime:      time.Now(),
+		MachineID:      MachineID,
+		CheckMachineID: CheckMachineID,
 	})
+	if UniqID == nil {
+		return errors.New("initialize unique id generate tool failed")
+	}
+	return nil
 }
 
 func (self *Task) TableEngine() string {
