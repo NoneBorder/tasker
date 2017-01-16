@@ -1,5 +1,4 @@
-// Package tasker implements a simple library for distribute tasks.
-
+// tasker is a package implements a simple library for distribute tasks.
 package tasker
 
 import (
@@ -40,14 +39,14 @@ type Task struct {
 	Log      string    `orm:"type(text)"`
 }
 
-// The consume func definition
+// ConsumeFn represents consume func definition.
 type ConsumeFn func(Input string, WorkerID uint64) (err error)
 
-// use for generate worker id
+// UniqID use for generate worker id.
 var UniqID *sonyflake.Sonyflake
 
 func InitIDGEN(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) error {
-	// init sonyflake
+	// init sonyflake.
 	UniqID = sonyflake.NewSonyflake(sonyflake.Settings{
 		StartTime:      time.Now(),
 		MachineID:      MachineID,
@@ -63,7 +62,7 @@ func (self *Task) TableEngine() string {
 	return "INNODB"
 }
 
-// New task with default settings
+// NewSimpleTask is new task with default settings.
 func NewSimpleTask(topic, input string) *Task {
 	return &Task{
 		Topic:    topic,
@@ -75,7 +74,7 @@ func NewSimpleTask(topic, input string) *Task {
 	}
 }
 
-// Publish Task to Msg Queue
+// Publish Task to Msg Queue.
 func (self *Task) Publish() (err error) {
 	o := orm.NewOrm()
 	_, err = o.Insert(self)
@@ -126,7 +125,7 @@ func (self *Task) consume(fn ConsumeFn) bool {
 	return success
 }
 
-// Consume a topic task
+// Consume a topic task.
 func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 	concurency = append(concurency, 1)
 

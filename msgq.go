@@ -7,7 +7,7 @@ import (
 	"github.com/astaxie/beego/toolbox"
 )
 
-// The interface for msg, all messages should be implements these interfaces
+// MsgQ is interface for msg, all messages should be implements these interfaces.
 type MsgQ interface {
 	New() MsgQ
 	Topic() string
@@ -15,7 +15,7 @@ type MsgQ interface {
 	Exec(uint64) error
 }
 
-// Add consume task to beego toolbox task, run consumer interval
+// MsgQInitTask add consume task to beego toolbox task, run consumer interval.
 func MsgQInitTask(m MsgQ) {
 	task := toolbox.NewTask(m.Topic(), m.TaskSpec(), func() error {
 		return MsgQConsume(m)
@@ -23,7 +23,7 @@ func MsgQInitTask(m MsgQ) {
 	toolbox.AddTask(m.Topic(), task)
 }
 
-// Publish a task
+// MsgQPublish represents publish a task.
 func MsgQPublish(m MsgQ) error {
 	input, err := json.Marshal(m)
 	if err != nil {
@@ -33,7 +33,7 @@ func MsgQPublish(m MsgQ) error {
 	return NewSimpleTask(m.Topic(), string(input)).Publish()
 }
 
-// Consume a message type
+// MsgQConsume is for consume a message type.
 func MsgQConsume(m MsgQ) error {
 	num, err := Consume(m.Topic(), func(input string, workerID uint64) (err error) {
 		this := m.New()
