@@ -12,6 +12,7 @@ type MsgQ interface {
 	New() MsgQ
 	Topic() string
 	TaskSpec() string
+	Concurency() int
 	Exec(uint64) error
 }
 
@@ -42,7 +43,7 @@ func MsgQConsume(m MsgQ) error {
 		}
 
 		return this.Exec(workerID)
-	})
+	}, m.Concurency())
 
 	beego.BeeLogger.Info("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err)
 	return err
