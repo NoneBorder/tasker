@@ -2,6 +2,7 @@ package tasker
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/toolbox"
@@ -32,6 +33,25 @@ func MsgQPublish(m MsgQ) error {
 	}
 
 	return NewSimpleTask(m.Topic(), string(input)).Publish()
+}
+
+// MsgQPublishWithRetry represents publish with retry and timeout set
+func MsgQPublishWithRetry(m MsgQ, timeout time.Duration, retry int) error {
+	input, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	task := &Task{
+		Topic:    m.Topic(),
+		Status:   "pending",
+		Timeout:  int(timeout.Seconds()),
+		Retry:    retry,
+		Input:    input,
+		WorkerId: 0,
+	}
+
+	return task.Publish()
 }
 
 // MsgQConsume is for consume a message type.
