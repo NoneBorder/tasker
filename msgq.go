@@ -47,7 +47,7 @@ func MsgQPublishWithRetry(m MsgQ, timeout time.Duration, retry int) error {
 		Status:   "pending",
 		Timeout:  int(timeout.Seconds()),
 		Retry:    retry,
-		Input:    input,
+		Input:    string(input),
 		WorkerId: 0,
 	}
 
