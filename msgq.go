@@ -45,7 +45,7 @@ func MsgQPublishWithRetry(m MsgQ, timeout time.Duration, retry int) error {
 	task := &Task{
 		Topic:    m.Topic(),
 		Status:   "pending",
-		Timeout:  int(timeout.Seconds()),
+		Timeout:  int(timeout.Seconds() * 1000),
 		Retry:    retry,
 		Input:    string(input),
 		WorkerId: 0,
