@@ -1,4 +1,4 @@
-// tasker is a package implements a simple library for distribute tasks.
+// Package tasker is a package implements a simple library for distribute tasks.
 package tasker
 
 import (
@@ -7,7 +7,6 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"github.com/sony/sonyflake"
 )
 
 /*
@@ -26,6 +25,7 @@ const (
 	TaskStatSuccess = "success"
 )
 
+// Task struct
 type Task struct {
 	Id       int
 	Topic    string
@@ -41,22 +41,6 @@ type Task struct {
 
 // ConsumeFn represents consume func definition.
 type ConsumeFn func(Input string, WorkerID uint64) (err error)
-
-// UniqID use for generate worker id.
-var UniqID *sonyflake.Sonyflake
-
-func InitIDGEN(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) error {
-	// init sonyflake.
-	UniqID = sonyflake.NewSonyflake(sonyflake.Settings{
-		StartTime:      time.Now(),
-		MachineID:      MachineID,
-		CheckMachineID: CheckMachineID,
-	})
-	if UniqID == nil {
-		return errors.New("initialize unique id generate tool failed")
-	}
-	return nil
-}
 
 func (self *Task) TableEngine() string {
 	return "INNODB"
