@@ -92,7 +92,7 @@ func (self *Core) becomeMaster() {
 	var err error
 	if self.Id != 0 {
 		// save
-		_, err = o.Update(self, "MasterInstanceID", "MasterOutOfDate", "MasterFQDN", "Updated")
+		_, err = o.Update(self, "MasterInstanceID", "MasterFQDN", "Updated")
 	} else {
 		// insert
 		_, err = o.Insert(self)
