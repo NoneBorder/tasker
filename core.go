@@ -146,7 +146,7 @@ func keepMasterRace() {
 			}
 		}
 
-		time.Sleep(time.Duration(core.InstanceHeartbeat-rand.Int63n(1000)) * time.Millisecond)
+		time.Sleep(time.Duration(core.InstanceHeartbeat-rand.Int63n(2000)) * time.Millisecond)
 	}
 }
 
