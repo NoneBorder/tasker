@@ -125,7 +125,7 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 	}
 	o := orm.NewOrm()
 
-	_, err := o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
+	_, err = o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
 		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
 		TaskStatPending, topic, TaskStatRunning,
 	).Exec()
