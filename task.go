@@ -67,7 +67,7 @@ func NewSimpleTask(topic, input string) *Task {
 // Publish Task to Msg Queue.
 func (self *Task) Publish() (err error) {
 	o := orm.NewOrm()
-	if _, err = o.Insert(self); err != nil {
+	if _, err = o.Insert(self); err == nil {
 		Stat(self.Topic, TaskStatPending, time.Duration(0))
 	}
 	return
