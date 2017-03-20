@@ -57,6 +57,8 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 
 	go keepMasterRace()
 
+	InitAllTask()
+
 	return nil
 }
 
