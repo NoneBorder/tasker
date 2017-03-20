@@ -7,7 +7,7 @@ import (
 )
 
 type Stats interface {
-	Stat(topic, status string, t time.Time, durantion time.Duration) error
+	Stat(topic, status string, t time.Time, duration time.Duration) error
 }
 
 var stats Stats
