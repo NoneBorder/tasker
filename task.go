@@ -56,7 +56,7 @@ func (self *Task) TableEngine() string {
 func NewSimpleTask(topic, input string) *Task {
 	return &Task{
 		Topic:    topic,
-		Status:   "pending",
+		Status:   TaskStatPending,
 		Timeout:  5000,
 		Retry:    3,
 		Input:    input,
@@ -67,7 +67,9 @@ func NewSimpleTask(topic, input string) *Task {
 // Publish Task to Msg Queue.
 func (self *Task) Publish() (err error) {
 	o := orm.NewOrm()
-	_, err = o.Insert(self)
+	if _, err = o.Insert(self); err != nil {
+		Stat(self.Topic, TaskStatPending, time.Duration(0))
+	}
 	return
 }
 
@@ -87,6 +89,8 @@ func (self *Task) exec(fn ConsumeFn) (err error) {
 }
 
 func (self *Task) consume(fn ConsumeFn) bool {
+	startT := time.Now().Local()
+
 	err := self.exec(fn)
 	success := err == nil
 
@@ -102,6 +106,10 @@ func (self *Task) consume(fn ConsumeFn) bool {
 		self.Status = TaskStatSuccess
 	}
 
+	// stat task exec
+	Stat(self.Topic, self.Status, time.Since(startT))
+
+	// update db record
 	self.WorkerId = 0
 	o := orm.NewOrm()
 	for i := 0; i < 3; i++ {
