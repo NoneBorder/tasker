@@ -2,6 +2,7 @@ package tasker
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -65,6 +66,6 @@ func MsgQConsume(m MsgQ) error {
 		return this.Exec(workerID)
 	}, m.Concurency())
 
-	beego.BeeLogger.Info("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err)
+	beego.Info(fmt.Sprintf("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err))
 	return err
 }

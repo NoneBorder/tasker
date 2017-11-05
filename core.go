@@ -2,6 +2,7 @@ package tasker
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"net"
 	"os"
@@ -101,7 +102,7 @@ func (self *Core) becomeMaster() {
 	}
 
 	if err != nil {
-		beego.BeeLogger.Error("[tasker] try to becomeMaster failed: %s", err.Error())
+		beego.Error(fmt.Sprintf("[tasker] try to becomeMaster failed: %s", err.Error()))
 	}
 }
 
@@ -109,7 +110,7 @@ func (self *Core) heartbeatMaster() {
 	o := orm.NewOrm()
 	_, err := o.Update(self, "Updated")
 	if err != nil {
-		beego.BeeLogger.Error("[tasker] heartbeatMaster failed: %s", err.Error())
+		beego.Error(fmt.Sprintf("[tasker] heartbeatMaster failed: %s", err.Error()))
 	}
 }
 
@@ -130,7 +131,7 @@ func keepMasterRace() {
 			}
 
 			// output the error log and sleep 1s
-			beego.BeeLogger.Error("[tasker] get core config from db failed: %s", err.Error())
+			beego.Error(fmt.Sprintf("[tasker] get core config from db failed: %s", err.Error()))
 			time.Sleep(1 * time.Second)
 			continue
 		}
