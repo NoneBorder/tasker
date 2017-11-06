@@ -3,10 +3,9 @@ package tasker
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/NoneBorder/dora"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -115,7 +114,7 @@ func (self *Task) consume(fn ConsumeFn) bool {
 	o := orm.NewOrm()
 	for i := 0; i < 3; i++ {
 		if _, err := o.Update(self); err != nil {
-			beego.Error(fmt.Sprintf("set task state failed: err=%s, task=%s", err.Error(), self))
+			dora.Error("set task state failed: err=%s, task=%s", err.Error(), self)
 		} else {
 			break
 		}
@@ -139,7 +138,7 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 		TaskStatPending, topic, TaskStatRunning,
 	).Exec()
 	if err != nil {
-		beego.Error(fmt.Sprintf("update dead running task to waiting failed: %s", err.Error()))
+		dora.Error("update dead running task to waiting failed: %s", err.Error())
 	}
 
 	res, err := o.Raw(`UPDATE task SET status=?, worker_id=? WHERE

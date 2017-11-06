@@ -2,10 +2,9 @@ package tasker
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/NoneBorder/dora"
 	"github.com/astaxie/beego/toolbox"
 )
 
@@ -66,6 +65,6 @@ func MsgQConsume(m MsgQ) error {
 		return this.Exec(workerID)
 	}, m.Concurency())
 
-	beego.Info(fmt.Sprintf("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err))
+	dora.Info("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err)
 	return err
 }

@@ -1,10 +1,9 @@
 package tasker
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/NoneBorder/dora"
 )
 
 type Stats interface {
@@ -24,6 +23,6 @@ func Stat(topic, status string, duration time.Duration) {
 
 	now := time.Now().Local()
 	if err := stats.Stat(topic, status, now, duration); err != nil {
-		beego.Error(fmt.Sprintf("[tasker] stat task error: %s", err.Error()))
+		dora.Error("[tasker] stat task error: %s", err.Error())
 	}
 }
