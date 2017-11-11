@@ -1,4 +1,3 @@
-// Package tasker is a package implements a simple library for distribute tasks.
 package tasker
 
 import (
@@ -9,14 +8,6 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-/*
-                                   +----> failed
-                                   |
-   pending ----+----> running -----+----> success
-               ^                   |
-               |                   v
-               +---------------- retry
-*/
 const (
 	TaskStatPending = "pending"
 	TaskStatRunning = "running"
@@ -25,7 +16,7 @@ const (
 	TaskStatSuccess = "success"
 )
 
-// Task struct
+// Task is the core object for tasker package.
 type Task struct {
 	Id       int
 	Topic    string

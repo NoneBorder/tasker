@@ -6,12 +6,14 @@ import (
 	"github.com/NoneBorder/dora"
 )
 
+// Stats is a interface for tasker to stat task execution result
 type Stats interface {
 	Stat(topic, status string, t time.Time, duration time.Duration) error
 }
 
 var stats Stats
 
+// SetStats is used for specify a real stat implemention
 func SetStats(s Stats) {
 	stats = s
 }

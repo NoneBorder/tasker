@@ -1,3 +1,18 @@
+/*
+Package tasker is a light distribute producer&consumer task model based on beego.
+
+Task
+
+the main description of message or job. the state machine like this:
+
+                                   +----> failed
+                                   |
+   pending ----+----> running -----+----> success
+               ^                   |
+               |                   v
+               +---------------- retry
+
+*/
 package tasker
 
 import (
@@ -13,7 +28,8 @@ import (
 	"github.com/sony/sonyflake"
 )
 
-// Core is the task module config table.
+// Core is the task package config table.
+//
 // `MasterOutOfDate` means the time master state can be save, instance can race to be master when the duration of `Updated` to now bigger than this.
 // `InstanceHeartbeat` is the max interval Instance should be check Master, should be less than `MasterOutOfDate`
 type Core struct {
@@ -26,15 +42,28 @@ type Core struct {
 }
 
 const (
-	defaultMasterOutOfDate   = 6000
+	// defaultMasterOutOfDate is the default MasterOutOfDate value
+	defaultMasterOutOfDate = 6000
+	// defaultInstanceHeartbeat is the default InstanceHeartbeat value
 	defaultInstanceHeartbeat = 3000
 )
 
 // UniqID use for generate worker id.
 var UniqID *sonyflake.Sonyflake
+
+// InstanceID is the tasker instance uniq key.
 var InstanceID uint16
+
+// IsMaster when true, the instance is master instance.
 var IsMaster bool
 
+/*
+Init will initialize the tasker instance, include:
+
+	1. generate the InstanceID use MachineID func, use instance private ip address when MachineID is nil
+	2. start race master in goroutine
+	3. initialize all task
+*/
 func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (err error) {
 	if MachineID == nil {
 		MachineID = lower16BitPrivateIP
@@ -62,6 +91,7 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 	return nil
 }
 
+// InitIDGEN is initialize the ID generator, does not need invoke if had use `Init`
 func InitIDGEN(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) error {
 	// init sonyflake.
 	UniqID = sonyflake.NewSonyflake(sonyflake.Settings{
@@ -181,7 +211,7 @@ func privateIPv4() (net.IP, error) {
 	return nil, errors.New("no private ip address")
 }
 
-// Get Fully Qualified Domain Name
+// FQDN Get Fully Qualified Domain Name
 // returns "unknown" or hostanme in case of error
 func FQDN() string {
 	hostname, err := os.Hostname()

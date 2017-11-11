@@ -1,6 +1,6 @@
 # Tasker
 
-A light distribute producter&consumer task model based on beego.
+A light distribute producer&consumer task model based on beego.
 
 ## Features
 
