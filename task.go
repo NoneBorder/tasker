@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/NoneBorder/dora"
-	"github.com/NoneBorder/tasker"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -125,7 +124,7 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 	}
 	o := orm.NewOrm()
 
-	if tasker.IsMaster {
+	if IsMaster {
 		// 仅在 master 上对已经僵死的 task 进行重置，减轻 DB 压力
 		_, err = o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
 		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
