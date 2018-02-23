@@ -72,6 +72,7 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 	if InstanceID, err = MachineID(); err != nil {
 		return
 	}
+	dora.Info("tasker started with InstanceID %d FQDN %s", InstanceID, FQDN())
 
 	if CheckMachineID != nil {
 		if !CheckMachineID(InstanceID) {
