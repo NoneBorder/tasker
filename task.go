@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/NoneBorder/dora"
+	"github.com/NoneBorder/tasker"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -124,12 +125,15 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 	}
 	o := orm.NewOrm()
 
-	_, err = o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
+	if tasker.IsMaster {
+		// 仅在 master 上对已经僵死的 task 进行重置，减轻 DB 压力
+		_, err = o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
 		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
-		TaskStatPending, topic, TaskStatRunning,
-	).Exec()
-	if err != nil {
-		dora.Error("update dead running task to waiting failed: %s", err.Error())
+			TaskStatPending, topic, TaskStatRunning,
+		).Exec()
+		if err != nil {
+			dora.Error("update dead running task to waiting failed: %s", err.Error())
+		}
 	}
 
 	res, err := o.Raw(`UPDATE task SET status=?, worker_id=? WHERE
