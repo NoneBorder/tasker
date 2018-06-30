@@ -105,7 +105,7 @@ func (self *Task) consume(fn ConsumeFn) bool {
 	o := orm.NewOrm()
 	for i := 0; i < 3; i++ {
 		if _, err := o.Update(self); err != nil {
-			dora.Error("set task state failed: err=%s, task=%s", err.Error(), self)
+			dora.Error().Msgf("set task state failed: err=%s, task=%s", err.Error(), self)
 		} else {
 			break
 		}
@@ -131,7 +131,7 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 			TaskStatPending, topic, TaskStatRunning,
 		).Exec()
 		if err != nil {
-			dora.Error("update dead running task to waiting failed: %s", err.Error())
+			dora.Error().Msgf("update dead running task to waiting failed: %s", err.Error())
 		}
 	}
 

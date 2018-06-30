@@ -72,7 +72,7 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 	if InstanceID, err = MachineID(); err != nil {
 		return
 	}
-	dora.Info("tasker started with InstanceID %d FQDN %s", InstanceID, FQDN())
+	dora.Info().Msgf("tasker started with InstanceID %d FQDN %s", InstanceID, FQDN())
 
 	if CheckMachineID != nil {
 		if !CheckMachineID(InstanceID) {
@@ -132,7 +132,7 @@ func (self *Core) becomeMaster() {
 	}
 
 	if err != nil {
-		dora.Error("[tasker] try to becomeMaster failed: %s", err.Error())
+		dora.Error().Msgf("[tasker] try to becomeMaster failed: %s", err.Error())
 	}
 }
 
@@ -140,7 +140,7 @@ func (self *Core) heartbeatMaster() {
 	o := orm.NewOrm()
 	_, err := o.Update(self, "Updated")
 	if err != nil {
-		dora.Error("[tasker] heartbeatMaster failed: %s", err.Error())
+		dora.Error().Msgf("[tasker] heartbeatMaster failed: %s", err.Error())
 	}
 }
 
@@ -161,7 +161,7 @@ func keepMasterRace() {
 			}
 
 			// output the error log and sleep 1s
-			dora.Error("[tasker] get core config from db failed: %s", err.Error())
+			dora.Error().Msgf("[tasker] get core config from db failed: %s", err.Error())
 			time.Sleep(1 * time.Second)
 			continue
 		}

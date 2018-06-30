@@ -25,6 +25,6 @@ func Stat(topic, status string, duration time.Duration) {
 
 	now := time.Now().Local()
 	if err := stats.Stat(topic, status, now, duration); err != nil {
-		dora.Error("[tasker] stat task error: %s", err.Error())
+		dora.Error().Msgf("[tasker] stat task error: %s", err.Error())
 	}
 }
