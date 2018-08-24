@@ -33,7 +33,7 @@ import (
 // `MasterOutOfDate` means the time master state can be save, instance can race to be master when the duration of `Updated` to now bigger than this.
 // `InstanceHeartbeat` is the max interval Instance should be check Master, should be less than `MasterOutOfDate`
 type Core struct {
-	Id                int
+	Id                uint64
 	MasterInstanceID  uint16    `orm:"column(master_instance_id)"`
 	MasterFQDN        string    `orm:"column(master_fqdn)"`
 	Updated           time.Time `orm:"auto_now"`

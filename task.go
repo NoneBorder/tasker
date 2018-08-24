@@ -18,7 +18,7 @@ const (
 
 // Task is the core object for tasker package.
 type Task struct {
-	Id       int
+	Id       uint64
 	Topic    string
 	Status   string
 	Timeout  int // 超时ms
