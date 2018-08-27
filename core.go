@@ -37,8 +37,8 @@ type Core struct {
 	MasterInstanceID  uint16    `orm:"column(master_instance_id)"`
 	MasterFQDN        string    `orm:"column(master_fqdn)"`
 	Updated           time.Time `orm:"auto_now"`
-	MasterOutOfDate   int64     // ms
-	InstanceHeartbeat int64     // ms
+	MasterOutOfDate   int64 // ms
+	InstanceHeartbeat int64 // ms
 }
 
 const (
@@ -72,6 +72,8 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 	if InstanceID, err = MachineID(); err != nil {
 		return
 	}
+
+	fqdn = getFQDN()
 	dora.Info().Msgf("tasker started with InstanceID %d FQDN %s", InstanceID, FQDN())
 
 	if CheckMachineID != nil {
@@ -85,6 +87,7 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 		return
 	}
 
+	go keepFQDNUpdating()
 	go keepMasterRace()
 
 	InitAllTask()
@@ -212,16 +215,28 @@ func privateIPv4() (net.IP, error) {
 	return nil, errors.New("no private ip address")
 }
 
+var fqdn string
+
 // FQDN Get Fully Qualified Domain Name
 // returns "unknown" or hostanme in case of error
 func FQDN() string {
+	return fqdn
+}
+
+func keepFQDNUpdating() {
+	for {
+		fqdn = getFQDN()
+		time.Sleep(180 * time.Second)
+	}
+}
+
+func getFQDN() string {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return "unknown"
-
 	}
 
-	addrs, err := net.LookupIP(hostname)
+	addrs, err := net.LookupIP(fqdn)
 	if err != nil {
 		return hostname
 	}
@@ -236,10 +251,9 @@ func FQDN() string {
 			if err != nil {
 				return hostname
 			}
-			fqdn := hosts[0]
-			return strings.TrimSuffix(fqdn, ".") // return fqdn without trailing dot
+			hostname = strings.TrimSuffix(hosts[0], ".") // return fqdn without trailing dot
+			return hostname
 		}
-
 	}
 
 	return hostname
