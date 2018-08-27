@@ -18,16 +18,17 @@ const (
 
 // Task is the core object for tasker package.
 type Task struct {
-	Id       uint64
-	Topic    string
-	Status   string
-	Timeout  int // 超时ms
-	Retry    int
-	Input    string `orm:"type(text)"`
-	WorkerId uint64
-	Created  time.Time `orm:"auto_now_add"`
-	Updated  time.Time `orm:"auto_now"`
-	Log      string    `orm:"type(text)"`
+	Id         uint64
+	Topic      string
+	Status     string
+	Timeout    int // 超时ms
+	Retry      int
+	Input      string    `orm:"type(text)"`
+	WorkerId   uint64
+	WorkerFQDN string    `orm:"column(worker_fqdn);type(text)"`
+	Created    time.Time `orm:"auto_now_add"`
+	Updated    time.Time `orm:"auto_now"`
+	Log        string    `orm:"type(text)"`
 }
 
 // ConsumeFn represents consume func definition.
@@ -135,9 +136,9 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 		}
 	}
 
-	res, err := o.Raw(`UPDATE task SET status=?, worker_id=? WHERE
+	res, err := o.Raw(`UPDATE task SET status=?, worker_id=?, worker_fqdn=concat(worker_fqdn, ?) WHERE
 		topic=? AND worker_id=0 AND status IN (?,?) LIMIT ?`,
-		TaskStatRunning, workerID, topic, TaskStatPending, TaskStatRetry, concurency[0],
+		TaskStatRunning, workerID, FQDN()+"\n", topic, TaskStatPending, TaskStatRetry, concurency[0],
 	).Exec()
 	if err != nil {
 		// not update db
