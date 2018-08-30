@@ -55,7 +55,7 @@ var UniqID *sonyflake.Sonyflake
 var InstanceID uint16
 
 // IsMaster when true, the instance is master instance.
-var IsMaster bool
+var IsMaster bool = false
 
 /*
 Init will initialize the tasker instance, include:
@@ -88,7 +88,11 @@ func Init(MachineID func() (uint16, error), CheckMachineID func(uint16) bool) (e
 	}
 
 	go keepFQDNUpdating()
-	go keepMasterRace()
+
+	justWorker := strings.ToLower(os.Getenv("NB_TASKER_JUST_WORKER"))
+	if justWorker != "on" && justWorker != "true" {
+		go keepMasterRace()
+	}
 
 	InitAllTask()
 

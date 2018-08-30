@@ -71,6 +71,12 @@ tasker.MsgQConsume(new(ExampleTask))
 tasker.MsgQInitTask(new(ExampleTask))
 ```
 
+## Advanced Config
+
+### OS ENV
+
+* **NB_TASKER_JUST_WORKER**: the instance will not race to become master when the environment set to "ON"
+
 ## License
 
 The MIT License (MIT)
