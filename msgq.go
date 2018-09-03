@@ -63,7 +63,7 @@ func MsgQConsume(m MsgQ) error {
 		}
 
 		return this.Exec(workerID)
-	}, m.Concurency())
+	})
 
 	dora.Info().Msgf("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err)
 	return err

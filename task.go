@@ -116,29 +116,31 @@ func (self *Task) consume(fn ConsumeFn) bool {
 }
 
 // Consume a topic task.
-func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
-	concurency = append(concurency, 1)
+func Consume(topic string, fn ConsumeFn) (int, error) {
+	o := orm.NewOrm()
+	if IsMaster {
+		// 仅在 master 上对已经僵死的 task 进行重置，减轻 DB 压力
+		if _, err := o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
+		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
+			TaskStatPending, topic, TaskStatRunning,
+		).Exec(); err != nil {
+			dora.Error().Msgf("update dead running task to waiting failed: %s", err.Error())
+		}
+	}
+
+	maxConsumeTask := cap(RunningTaskChannel[topic]) - len(RunningTaskChannel[topic])
+	if maxConsumeTask == 0 {
+		return 0, errors.New("reached max running task limit")
+	}
 
 	workerID, err := UniqID.NextID()
 	if err != nil {
 		return 0, err
 	}
-	o := orm.NewOrm()
-
-	if IsMaster {
-		// 仅在 master 上对已经僵死的 task 进行重置，减轻 DB 压力
-		_, err = o.Raw(`UPDATE task SET status=?, worker_id=0 WHERE topic=? AND status=?
-		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
-			TaskStatPending, topic, TaskStatRunning,
-		).Exec()
-		if err != nil {
-			dora.Error().Msgf("update dead running task to waiting failed: %s", err.Error())
-		}
-	}
 
 	res, err := o.Raw(`UPDATE task SET status=?, worker_id=?, worker_fqdn=concat(worker_fqdn, ?) WHERE
 		topic=? AND worker_id=0 AND status IN (?,?) LIMIT ?`,
-		TaskStatRunning, workerID, FQDN()+"\n", topic, TaskStatPending, TaskStatRetry, concurency[0],
+		TaskStatRunning, workerID, FQDN()+"\n", topic, TaskStatPending, TaskStatRetry, maxConsumeTask,
 	).Exec()
 	if err != nil {
 		// not update db
@@ -159,19 +161,14 @@ func Consume(topic string, fn ConsumeFn, concurency ...int) (int, error) {
 		return 0, err
 	}
 
-	waitChannel := make(chan bool)
+	// TODO: 如何保证程序退出时正在运行的 task 可用？当前超时后 5s 僵尸 task 会被重新激活，但不能保证原子性
 	for _, t := range tasks {
+		RunningTaskChannel[topic] <- true
 		go func(t *Task) {
-			waitChannel <- t.consume(fn)
+			t.consume(fn)
+			<-RunningTaskChannel[topic]
 		}(t)
 	}
 
-	successTasks := 0
-	for _ = range tasks {
-		if <-waitChannel {
-			successTasks += 1
-		}
-	}
-
-	return successTasks, nil
+	return len(tasks), nil
 }
