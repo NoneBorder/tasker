@@ -75,7 +75,8 @@ func (self *Task) Publish() (err error) {
 }
 
 func (self *Task) exec(ctx *context.Context, fn ConsumeFn) (err error) {
-	errC := make(chan error)
+	// errC in select no other goroutine, must use buffered channel
+	errC := make(chan error, 1)
 	select {
 	case errC <- fn(ctx, self.Input, self.WorkerId):
 		err = <-errC
