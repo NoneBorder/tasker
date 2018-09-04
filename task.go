@@ -160,7 +160,7 @@ func Consume(topic string, fn ConsumeFn) (int, error) {
 	}
 
 	res, err := o.Raw(`UPDATE task SET status=?, worker_id=?, worker_fqdn=concat(worker_fqdn, ?) WHERE
-		topic=? AND worker_id=0 AND status IN (?,?) AND exec_after > NOW() LIMIT ?`,
+		topic=? AND worker_id=0 AND status IN (?,?) AND exec_after <= NOW() LIMIT ?`,
 		TaskStatRunning, workerID, FQDN()+"\n", topic, TaskStatPending, TaskStatRetry, maxConsumeTask,
 	).Exec()
 	if err != nil {
