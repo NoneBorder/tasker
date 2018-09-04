@@ -89,7 +89,7 @@ func (self *Task) exec(ctx *context.Context, fn ConsumeFn) (err error) {
 
 func (self *Task) consume(fn ConsumeFn) bool {
 	startT := time.Now().Local()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(self.Timeout+1)*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(self.Timeout+1)*time.Millisecond)
 	defer cancel()
 
 	err := self.exec(&ctx, fn)
