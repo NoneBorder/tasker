@@ -141,7 +141,7 @@ func Consume(topic string, fn ConsumeFn) (int, error) {
 	o := orm.NewOrm()
 	if IsMaster {
 		// 仅在 master 上对已经僵死的 task 进行重置，减轻 DB 压力
-		if _, err := o.Raw(`UPDATE task SET status=?, retry=retry-1, worker_id=0 WHERE topic=? AND status=?
+		if _, err := o.Raw(`UPDATE task SET status=?, retry=retry-1, worker_id=0, updated=NOW() WHERE topic=? AND status=?
 		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
 			TaskStatRetry, topic, TaskStatRunning,
 		).Exec(); err != nil {
@@ -159,7 +159,7 @@ func Consume(topic string, fn ConsumeFn) (int, error) {
 		return 0, err
 	}
 
-	res, err := o.Raw(`UPDATE task SET status=?, worker_id=?, worker_fqdn=concat(worker_fqdn, ?) WHERE
+	res, err := o.Raw(`UPDATE task SET status=?, worker_id=?, worker_fqdn=concat(worker_fqdn, ?), updated=NOW() WHERE
 		topic=? AND worker_id=0 AND status IN (?,?) AND exec_after <= NOW() LIMIT ?`,
 		TaskStatRunning, workerID, FQDN()+"\n", topic, TaskStatPending, TaskStatRetry, maxConsumeTask,
 	).Exec()
