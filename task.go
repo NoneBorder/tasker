@@ -76,12 +76,10 @@ func (self *Task) Publish() (err error) {
 
 func (self *Task) exec(ctx *context.Context, fn ConsumeFn) (err error) {
 	errC := make(chan error)
-	go func() {
-		errC <- fn(ctx, self.Input, self.WorkerId)
-	}()
-
 	select {
-	case err = <-errC:
+	case errC <- fn(ctx, self.Input, self.WorkerId):
+		err = <-errC
+
 	case <-(*ctx).Done():
 		err = (*ctx).Err()
 	}
