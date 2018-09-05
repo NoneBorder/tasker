@@ -9,7 +9,7 @@ import (
 	"github.com/astaxie/beego/toolbox"
 )
 
-var zeroTime, _ = time.Parse(time.RFC3339, "1971-01-01T00:00:00Z00:00")
+var zeroTime, _ = time.Parse(time.RFC3339, "1971-01-01T00:00:00+00:00")
 
 // MsgQ is interface for msg, all messages should be implements these interfaces.
 type MsgQ interface {
