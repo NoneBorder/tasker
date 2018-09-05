@@ -12,12 +12,12 @@ var RegisteredTask map[string]MsgQ
 var RunningTaskChannel map[string]chan bool
 
 // ConsumeMutex is a map record consumer consume task lock
-var ConsumeMutex map[string]sync.Mutex
+var ConsumeMutex map[string]*sync.Mutex
 
 func init() {
 	RegisteredTask = make(map[string]MsgQ)
 	RunningTaskChannel = make(map[string]chan bool)
-	ConsumeMutex = make(map[string]sync.Mutex)
+	ConsumeMutex = make(map[string]*sync.Mutex)
 }
 
 // RegisterTask is used for consumer task at init func, register them self to the tasker
@@ -28,7 +28,7 @@ func RegisterTask(item MsgQ) {
 	}
 	RegisteredTask[itemName] = item
 	RunningTaskChannel[itemName] = make(chan bool, item.Concurency())
-	ConsumeMutex[itemName] = sync.Mutex{}
+	ConsumeMutex[itemName] = new(sync.Mutex)
 }
 
 // InitAllTask will init all RegisteredTask to beego toolbox, this will start consume task
