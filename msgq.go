@@ -64,7 +64,9 @@ func MsgQPublishWithPlanTime(m MsgQ, timeout time.Duration, retry int, execAfter
 
 // MsgQConsume is for consume a message type.
 func MsgQConsume(m MsgQ) error {
-	num, err := Consume(m.Topic(), func(ctx *context.Context, input string, workerID uint64) (err error) {
+	logger := dora.With().Str("topic", m.Topic()).Logger()
+
+	num, err := Consume(logger, m.Topic(), func(ctx *context.Context, input string, workerID uint64) (err error) {
 		this := m.New()
 		if err = json.Unmarshal([]byte(input), this); err != nil {
 			return
@@ -73,6 +75,6 @@ func MsgQConsume(m MsgQ) error {
 		return this.Exec(ctx, workerID)
 	})
 
-	dora.Info().Msgf("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err)
+	logger.Info().Msgf("consume for %s exec tasks=%d, err=%v", m.Topic(), num, err)
 	return err
 }

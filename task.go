@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/NoneBorder/dora"
 	"github.com/astaxie/beego/orm"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -88,7 +88,7 @@ func (self *Task) exec(ctx *context.Context, fn ConsumeFn) (err error) {
 	return
 }
 
-func (self *Task) consume(fn ConsumeFn) bool {
+func (self *Task) consume(logger zerolog.Logger, fn ConsumeFn) bool {
 	startT := time.Now().Local()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(self.Timeout+1)*time.Millisecond)
 	defer cancel()
@@ -128,7 +128,7 @@ func (self *Task) consume(fn ConsumeFn) bool {
 	o := orm.NewOrm()
 	for i := 0; i < 3; i++ {
 		if _, err := o.Update(self); err != nil {
-			dora.Error().Msgf("set task state failed: err=%s, task=%s", err.Error(), self)
+			logger.Error().Msgf("set task state failed: err=%s, task=%s", err.Error(), self)
 		} else {
 			break
 		}
@@ -138,7 +138,7 @@ func (self *Task) consume(fn ConsumeFn) bool {
 }
 
 // Consume a topic task.
-func Consume(topic string, fn ConsumeFn) (int, error) {
+func Consume(logger zerolog.Logger, topic string, fn ConsumeFn) (int, error) {
 	o := orm.NewOrm()
 	if IsMaster {
 		// 仅在 master 上对已经僵死的 task 进行重置，减轻 DB 压力
@@ -146,7 +146,7 @@ func Consume(topic string, fn ConsumeFn) (int, error) {
 		AND TIMESTAMPDIFF(SECOND, updated, now())*1000-5000>timeout`,
 			TaskStatRetry, topic, TaskStatRunning,
 		).Exec(); err != nil {
-			dora.Error().Msgf("update dead running task to waiting failed: %s", err.Error())
+			logger.Error().Msgf("update dead running task to waiting failed: %s", err.Error())
 		}
 	}
 
@@ -191,7 +191,9 @@ func Consume(topic string, fn ConsumeFn) (int, error) {
 	for _, t := range tasks {
 		RunningTaskChannel[topic] <- true
 		go func(t *Task) {
-			t.consume(fn)
+			sT := time.Now()
+			succ := t.consume(logger, fn)
+			logger.Info().Bool("success", succ).Int64("latency", time.Since(sT).Nanoseconds()/1000000).Msgf("running task finished")
 			<-RunningTaskChannel[topic]
 		}(t)
 	}
