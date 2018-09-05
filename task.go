@@ -150,6 +150,10 @@ func Consume(topic string, fn ConsumeFn) (int, error) {
 		}
 	}
 
+	// Consume operator should be atomic
+	ConsumeMutex[topic].Lock()
+	defer ConsumeMutex[topic].Unlock()
+
 	maxConsumeTask := cap(RunningTaskChannel[topic]) - len(RunningTaskChannel[topic])
 	if maxConsumeTask == 0 {
 		return 0, errors.New("reached max running task limit")
